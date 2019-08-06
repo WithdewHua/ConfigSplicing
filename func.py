@@ -18,7 +18,7 @@ def get_page(url):
 
 def parse_ss(uri):
     """解析 ss URI"""
-    if "@" in uri:
+    if '@' in uri:
         base64_encode_str = uri[5:uri.find('@')]
         # 判断是否需要补充字符
         missing = len(base64_encode_str) % 4
@@ -26,7 +26,7 @@ def parse_ss(uri):
             base64_encode_str += '=' * (4 - missing)
         server_and_port = uri[(uri.find('@') + 1):uri.find('#')]
         node_name_str = uri[(uri.find('#') + 1):]
-        # 将节点名字用 urlunquote 解码出来
+        # 将节点名字用 unquotes 解码出来
         node_name = urllib.parse.unquote(node_name_str)
         # base64 解码
         method_and_password = base64.b64decode(base64_encode_str).decode('utf-8')
@@ -52,11 +52,10 @@ def parse_ss(uri):
 
 
 def change_group_name(group_names):
-    str1 = input("原策略组名字分别为：" + " ".join(group_names) + "\n" + "请按照原策略组顺序依次填写新的策略名（空格分隔）：")
-    new_group_names = str1.strip().split(" ")
+    str1 = input('原策略组名字分别为：' + ' '.join(group_names) + '\n' + '请按照原策略组顺序依次填写新的策略名（空格分隔）：').strip()
+    new_group_names = str1.split(" ")
+    print(new_group_names)
     group_name_dict = {}
-    i = 0
-    for name in group_names:
-        group_name_dict[name] = new_group_names[i]
-        i += 1
+    for i in lem(group_names):
+        group_name_dict[group_names[i]] = new_group_names[i]
     return group_name_dict
