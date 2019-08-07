@@ -2,12 +2,12 @@
 # -*-coding:utf-8 -*-
 #
 # Copyright:WithdewHua
-#
+# modified: 2019-08-07
 
 import os
 
-from func import change_group_name
-from nodes import choose_nodes, Nodes
+import func.change_group_name
+from nodes import choose_nodes, GetNodes
 from rules import GetRules
 
 
@@ -16,13 +16,13 @@ def main():
     # 处理托管链接和规则链接
     _url = input('请输入序号（1. SS 订阅 2. Surge 托管）：')
     if int(_url) == 1:
-        node_url = input('请输入 SS 订阅链接：').strip()
+        node_urls = input('请输入 SS 订阅链接（多个链接用空格间隔）：').strip()
         print('节点获取中...')
-        [nodes, node_names] = Nodes(node_url).shadowsocks()
+        [nodes, node_names] = GetNodes(node_urls).shadowsocks()
     if int(_url) == 2:
-        node_url = input('请输入 Surge 托管链接：')
+        node_url = input('请输入 Surge 托管链接（多个链接用空格间隔）：').strip()
         print('节点获取中...')
-        [nodes, node_names] = Nodes(node_url).surge()
+        [nodes, node_names] = GetNodes(node_urls).surge()
     rule_url = input('请输入规则链接（默认神机规则）：').strip()
     if rule_url == '':
         rule_url = 'https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Pro.conf'
@@ -51,7 +51,7 @@ def main():
     # 询问是否需要更改策略组名称
     str1 = input('是否需要更改策略组名称（Y/n | 默认为否）').strip()
     if (str1 == 'Y') or (str1 == 'y'):
-        group_name_dict = change_group_name(group_names)
+        group_name_dict = func.change_group_name.change_group_name(group_names)
         with open(path, mode='a+', encoding='utf-8') as f:
             for line in new_config:
                 for key, value in group_name_dict.items():

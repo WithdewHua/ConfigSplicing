@@ -4,13 +4,13 @@
 # 2019-08-05
 
 import re
-import func
+import func.get_config
 
 
 class GetRules(object):
     def __init__(self, url):
         # 获取整个文件内容并存入字符串数组中
-        self.config = func.get_page(url).readlines()
+        self.config = func.get_config.page(url)
         self.rules = []
         for rule in self.config:
             rule = rule.decode('utf-8')

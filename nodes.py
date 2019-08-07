@@ -2,9 +2,12 @@
 # Copyright: WithdewHua
 # 2019-08-05
 
-import re
 import base64
-import func
+import re
+
+import func.change_group_name
+import func.get_config
+import func.parse
 
 
 def choose_nodes(node_names, group_names):
@@ -40,10 +43,10 @@ def choose_nodes(node_names, group_names):
     return chosen_dict
 
 
-class Nodes(object):
-    def __init__(self, url):
+class GetNodes(object):
+    def __init__(self, urls):
         # 获取整个文件内容并存入字符串数组中
-        self.config = func.get_page(url).readlines()
+        self.config = func.get_config.page(urls)
         # 初始化节点和节点名列表
         self.nodes = ['[Proxy]\n']
         self.node_names = []
@@ -61,11 +64,14 @@ class Nodes(object):
 
     def shadowsocks(self):
         """输入链接为SS订阅"""
-        nodes_str = base64.b64decode(self.config[0]).decode('utf-8').strip()
-        nodes_list = nodes_str.split('\n')
+        _nodes = []
+        nodes_list = []
+        for i in range(len(self.config)):
+            _nodes.append(base64.b64decode(self.config[i]).decode('utf-8').strip())
+            nodes_list += _nodes[i].split('\n')
         nodes_dict = {}
         for node in nodes_list:
-            [node_name, ss_params] = func.parse_ss(node)
+            [node_name, ss_params] = func.parse.parse_ss(node)
             nodes_dict[node_name] = ss_params
         for key, value in nodes_dict.items():
             join = key + ' = custom' + ', ' + ', '.join(value) + ', udp-relay=true' + '\n'
