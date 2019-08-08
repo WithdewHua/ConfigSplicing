@@ -6,8 +6,8 @@
 
 import os
 
-import func.change_group_name
-from nodes import choose_nodes, GetNodes
+from functions import change_group_name, choose_nodes
+from nodes import GetNodes
 from rules import GetRules
 
 
@@ -51,7 +51,7 @@ def main():
     # 询问是否需要更改策略组名称
     str1 = input('是否需要更改策略组名称（Y/n | 默认为否）').strip()
     if (str1 == 'Y') or (str1 == 'y'):
-        group_name_dict = func.change_group_name.change_group_name(group_names)
+        group_name_dict = change_group_name(group_names)
         with open(path, mode='a+', encoding='utf-8') as f:
             for line in new_config:
                 for key, value in group_name_dict.items():
