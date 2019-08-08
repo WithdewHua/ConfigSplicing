@@ -2,12 +2,13 @@
 # Copyright: WithdewHua
 # 2019-08-08
 
+import os
 import base64
 import urllib.parse
 from urllib import request
 
 
-def page(urls):
+def read_config(urls):
     """修改 header"""
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                              'Chrome/75.0.3770.142 Safari/537.36'}
@@ -24,6 +25,7 @@ def page(urls):
 
 def parse_ss(uri):
     """解析 ss URI"""
+    # 格式一：只 base64 编码加密和密码
     if '@' in uri:
         base64_encode_str = uri[5:uri.find('@')]
         # 判断是否需要补充字符
@@ -32,21 +34,28 @@ def parse_ss(uri):
             base64_encode_str += '=' * (4 - missing)
         server_and_port = uri[(uri.find('@') + 1):uri.find('#')]
         node_name_str = uri[(uri.find('#') + 1):]
+
         # 将节点名字用 unquotes 解码出来
         node_name = urllib.parse.unquote(node_name_str)
         # base64 解码
         method_and_password = base64.b64decode(base64_encode_str).decode('utf-8')
+
         # 将 method password server port 放入一个列表中
         list1 = method_and_password.split(':')
         list2 = server_and_port.split(':')
         ss_params = list2 + list1
+
+    # 格式二：将加密、密码、服务器、端口全部进行 base64 编码
     else:
         base64_encode_str = uri[5:uri.find('#')]
         # 判断是否需要补充字符
         missing = len(base64_encode_str) % 4
         if missing != 0:
             base64_encode_str += '=' * (4 - missing)
+
+        # 解码，以 # 为分界点，后面的即为节点名字
         node_name = urllib.parse.unquote(uri[(uri.find('#')) + 1:])
+        # 处理节点的各个参数
         ss_params_tmp = base64.b64decode(base64_encode_str).decode('utf-8').split(':')
         if len(ss_params_tmp) != 3:
             print('链接有误！请检查链接')
@@ -69,6 +78,7 @@ def choose_nodes(node_names, group_names):
     params = ['url=http://www.gstatic.com/generate_204']
     for i in range(len(params)):
         node_dict[len(group_names) + len(node_names) + 5 + i] = params[i]
+
     # 为策略组选择节点
     chosen_dict = {}
     for k in range(len(group_names)):
@@ -80,6 +90,7 @@ def choose_nodes(node_names, group_names):
         tmp_list = []
         for v in num_list:
             v = int(v)
+            # 666 时添加所有节点
             if v == 666:
                 for g in range(len(node_names)):
                     m = g + len(group_names) + 5
@@ -99,3 +110,32 @@ def change_group_name(group_names):
     for i in range(len(group_names)):
         group_name_dict[group_names[i]] = new_group_names[i]
     return group_name_dict
+
+
+def write_config(new_config, group_names):
+    """将配置写入文件中"""
+    # 写入文件准备
+    filename = input('为生成的文件取个好听的名字吧（默认 WithdewHua）：').replace(' ', '')
+    if filename == '':
+        filename = 'WithdewHua'
+    path = os.path.dirname(__file__) + '/results/' + filename + '.conf'
+    # 判断文件是否存在，若有则删除
+    if os.path.exists(path):
+        os.remove(path)
+
+    # 询问是否需要更改策略组名称
+    str1 = input('是否需要更改策略组名称（Y/n | 默认为否）').strip()
+    if (str1 == 'Y') or (str1 == 'y'):
+        group_name_dict = change_group_name(group_names)
+        with open(path, mode='a+', encoding='utf-8') as f:
+            for line in new_config:
+                for key, value in group_name_dict.items():
+                    line = line.replace(key, value)
+                f.write(line)
+    elif (str1 == 'N') or (str1 == 'n') or (str1 == ''):
+        with open(path, mode='a+', encoding='utf-8') as f:
+            for line in new_config:
+                f.write(line)
+    else:
+        print('输入错误！')
+        return
