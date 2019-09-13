@@ -22,7 +22,7 @@
 - 安装依赖：
 
   ```bash
-  python install .
+  pip3 install .
   ```
   
 - 输入命令：
