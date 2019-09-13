@@ -4,24 +4,26 @@
 # Copyright:WithdewHua
 # modified: 2019-08-07
 
+import click
 
 from functions import choose_nodes, write_config
 from nodes import GetNodes
 from rules import GetRules
 
 
-def main():
-    """项目主程序"""
+@click.command()
+@click.option('-r', '--rule_url', default='https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Pro.conf', help='规则链接（默认为神机规则）')
+@click.argument('sub_links', nargs=-1)
+def main(sub_links, rule_url):
+    """
+    ConfigSplicing
+    """
+
     # 处理托管链接和规则链接
-    node_urls = input('请输入 Surge/SS 订阅链接（多个链接用空格间隔）：').strip()
     print('节点获取中...')
     # 获取节点和节点名字
-    [nodes, node_names] = GetNodes(node_urls).get_ss()
-    rule_url = input('请输入规则链接（默认神机规则）：').strip()
-    if rule_url == '':
-        rule_url = 'https://raw.githubusercontent.com/ConnersHua/Profiles/master/Surge/Pro.conf'
-    else:
-        rule_url = rule_url
+    [nodes, node_names] = GetNodes(sub_links).get_ss()
+    # 处理规则
     print('规则获取中...')
     # 获取 Surge 格式规则
     [general, group_names, rule] = GetRules(rule_url).surge()
@@ -41,4 +43,5 @@ def main():
     print('脚本运行结束,请在 results 文件夹查看文件!')
 
 
-main()
+if __name__ == '__main__':
+    main()

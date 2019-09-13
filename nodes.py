@@ -35,6 +35,10 @@ class GetNodes(object):
                 self.nodes.append(line + '\n')
                 self.node_names.append(res1.group(1))
             if res2:
+                # 判断编码是否需要补充字符
+                missing = len(line) % 4
+                if missing != 0:
+                    line += '=' * (4 - missing)
                 # 将 base64 编码内容解码并转成字符串列表
                 _nodes.append(base64.b64decode(line.encode()).decode().strip())
                 nodes_list += _nodes[-1].split('\n')

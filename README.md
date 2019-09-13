@@ -19,10 +19,31 @@
   cd ConfigSplicing
   ```
 
+- 安装依赖：
+
+  ```bash
+  python install .
+  ```
+  
 - 输入命令：
 
   ```bash
-  python main.py
+  # 查看帮助
+  cs --help
+  
+  Usage: cs [OPTIONS] [SUB_LINKS]...
+
+  ConfigSplicing
+
+  Options:
+  -r, --rule_url TEXT  规则链接（默认为神机规则）
+  --help               Show this message and exit.
+
+  # 示例
+  ## 不自定义规则链接
+  cs ss_link1 ss_link2 
+  ## 自定义规则链接
+  cs -r rule_link ss_link1 ss_link2
   ```
 
 - 然后根据提示做完就可以了，能不能成功就随缘吧。:relieved:
