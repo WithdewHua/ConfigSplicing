@@ -5,19 +5,33 @@
 import base64
 import re
 
+from config import read_config
 import functions as fun
 
 
 class GetNodes(object):
+    """
+    获取节点
+    """
+
     def __init__(self, urls):
+        """
+        获取节点链接里的所有配置
+        :param urls: 节点链接
+        """
+
         # 获取整个文件内容并存入字符串数组中
-        self.config = fun.read_config(urls)
+        self.config = read_config(urls)
         # 初始化节点和节点名列表
         self.nodes = ['[Proxy]\n']
         self.node_names = []
 
     def get_ss(self):
-        """从订阅链接或者托管链接获取节点"""
+        """
+        从订阅链接或者托管链接获取节点
+        :return: Surge 格式的节点列表以及其节点名
+        """
+
         # 初始化
         _nodes = []
         nodes_list = []
@@ -52,4 +66,4 @@ class GetNodes(object):
             # 添加到节点列表
             self.nodes.append(join)
             self.node_names.append(key)
-        return [self.nodes, self.node_names]
+        return self.nodes, self.node_names

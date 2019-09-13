@@ -5,13 +5,13 @@
 
 import re
 
-import functions as fun
+from config import read_config
 
 
 class GetRules(object):
     def __init__(self, url):
         # 获取整个文件内容并存入字符串数组中
-        self.config = fun.read_config(url)
+        self.config = read_config(url)
         self.rules = []
         for rule in self.config:
             rule = rule.decode('utf-8')
@@ -40,6 +40,7 @@ class GetRules(object):
         for li in group:
             res = re.search(r'(.+)=\s+(select|url-test|fallback)', li)
             res2 = re.search(r'(#.+)', li)
+            # 只获取非注释的策略组
             if (res is not None) and (res2 is None):
-                group_names.append(res.group(1))
-        return [general, group_names, rule]
+                group_names.append(res.group(1).strip())
+        return general, group_names, rule
