@@ -3,10 +3,10 @@
 # 2019-09-14
 #
 
-from urllib import request
-from functions import change_group_name
 import os
-import re
+from urllib import request
+
+from ruamel import yaml
 
 
 def read_config(urls):
@@ -41,11 +41,10 @@ def read_config(urls):
     return pages
 
 
-def write_config(new_config, group_names):
+def write_surge_config(new_config):
     """
     将配置写入文件中
     :param new_config: 拼接后的配置文件
-    :param group_names: 策略组名字
     :return:
     """
 
@@ -55,24 +54,28 @@ def write_config(new_config, group_names):
         filename = 'WithdewHua'
     path = os.path.dirname(__file__) + '/results/' + filename + '.conf'
 
-    # 询问是否需要更改策略组名称
-    while True:
-        str1 = input('是否需要更改策略组名称（Y/[n]）').strip()
-        if (str1 == 'Y') or (str1 == 'y'):
-            # 改变策略组名字
-            changed_group_name = change_group_name(group_names)
-            with open(path, mode='w', encoding='utf-8') as f:
-                for line in new_config:
-                    for key, value in changed_group_name.items():
-                        line = re.sub(key, value, line)
-                    f.write(line)
-            break
-        elif (str1 == 'N') or (str1 == 'n') or (str1 == ''):
-            # 不改变直接写入
-            with open(path, mode='w', encoding='utf-8') as f:
-                for line in new_config:
-                    f.write(line)
-            break
-        else:
-            print('输入错误！')
-            continue
+    with open(path, mode='w', encoding='utf-8') as f:
+        for line in new_config:
+            f.write(line)
+
+
+def write_clash_config(proxy, proxy_group, rule, clash_yaml):
+    """
+    生成 clash 的配置文件
+    :param rule: 规则列表
+    :param proxy: 节点列表
+    :param proxy_group: 策略组列表
+    :param clash_yaml: 原规则文件
+    :return:
+    """
+
+    clash_yaml.update({'Proxy': proxy, 'Proxy Group': proxy_group, 'Rule': rule})
+
+    # 写入文件准备
+    filename = input('为生成的文件取个好听的名字吧（默认 WithdewHua）：').replace(' ', '')
+    if filename == '':
+        filename = 'WithdewHua'
+    path = os.path.dirname(__file__) + '/results/' + filename + '.yaml'
+
+    with open(path, 'w', encoding='utf-8') as f:
+        yaml.dump(clash_yaml, f, Dumper=yaml.RoundTripDumper, allow_unicode=True)

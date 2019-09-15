@@ -24,7 +24,7 @@ def parse_ss(uri):
         node_name_str = uri[(uri.find('#') + 1):]
 
         # 将节点名字用 unquotes 解码出来
-        node_name = urllib.parse.unquote(node_name_str)
+        node_name = urllib.parse.unquote(node_name_str).strip()
         # base64 解码
         method_and_password = base64.b64decode(base64_encode_str).decode('utf-8')
 
@@ -42,7 +42,7 @@ def parse_ss(uri):
             base64_encode_str += '=' * (4 - missing)
 
         # 解码，以 # 为分界点，后面的即为节点名字
-        node_name = urllib.parse.unquote(uri[(uri.find('#')) + 1:])
+        node_name = urllib.parse.unquote(uri[(uri.find('#')) + 1:]).strip()
         # 处理节点的各个参数
         ss_params_tmp = base64.b64decode(base64_encode_str).decode('utf-8').split(':')
         if len(ss_params_tmp) != 3:
@@ -51,58 +51,10 @@ def parse_ss(uri):
         else:
             password_and_server = ss_params_tmp[1].split('@')
             ss_params = [password_and_server[1], ss_params_tmp[2], ss_params_tmp[0], password_and_server[0]]
-    return [node_name, ss_params]
+    return node_name, ss_params
 
 
-def choose_nodes(node_names, group_names):
-    """
-    为策略组选择节点和策略方式
-    :param node_names: 获取到的节点名字
-    :param group_names: 规则中的策略组名字
-    :return:
-    """
-
-    # 将所有可选项放进一个字典中，包括节点、策略组以及策略方式,显示顺序为策略方式 -> 策略组名 -> 节点
-    node_dict = {0: 'select', 1: 'url-test', 2: 'fallback', 3: 'DIRECT', 4: 'REJECT'}
-    for h in range(len(group_names)):
-        node_dict[5 + h] = group_names[h]
-    for i in range(len(node_names)):
-        node_dict[len(group_names) + 5 + i] = node_names[i]
-    # 可选参数
-    params = ['url=http://www.gstatic.com/generate_204']
-    for i in range(len(params)):
-        node_dict[len(group_names) + len(node_names) + 5 + i] = params[i]
-
-    # 为策略组选择节点
-    chosen_dict = {}
-    for k in range(len(group_names)):
-        print('策略 ' + group_names[k] + ' 可供选择的内容有： ')
-        for key, value in node_dict.items():
-            print(str(key) + ": " + value)
-        while True:
-            string = input('请为 ' + group_names[k] + ' 挑选（输入数字,0-2必选一个，输入666全选所有节点）：')
-            num_list = string.strip().split(" ")
-            tmp_list = []
-            try:
-                for v in num_list:
-                    v = int(v)
-            except ValueError:
-                print('请输入正确的数字')
-                continue
-            else:
-                # 666 时添加所有节点
-                if v == 666:
-                    for g in range(len(node_names)):
-                        m = g + len(group_names) + 5
-                        tmp_list.append(node_dict[m])
-                else:
-                    tmp_list.append(node_dict[v])
-                break
-        chosen_dict[group_names[k]] = tmp_list
-    return chosen_dict
-
-
-def change_group_name(group_names):
+def input_new_group_name(group_names):
     """
     修改策略组名字
     :param group_names: 原策略组名字
@@ -110,6 +62,7 @@ def change_group_name(group_names):
     """
 
     group_name_changed_dict = {}
+    new_group_name = list(group_names)
     print('原策略组名字分别为：')
     for i, el in enumerate(group_names):
         print(i, el)
@@ -129,6 +82,38 @@ def change_group_name(group_names):
                 else:
                     str2 = input('请输入新名字：').strip()
                     group_name_changed_dict[group_names[index]] = str2
+                    new_group_name[index] = str2
                 continue
 
-    return group_name_changed_dict
+    return new_group_name, group_name_changed_dict
+
+
+def get_group_name_from_clash(clash_yaml):
+    """
+    获取 clash 策略组名
+    :param clash_yaml: clash 规则文件
+    :return: 策略组名列表
+    """
+
+    proxy_group = clash_yaml['Proxy Group']
+    group_names = []
+    for group in proxy_group:
+        name = group['name']
+        group_names.append(name)
+    return group_names
+
+
+def change_rule_policy(changed_group_dict, rule_list):
+    """
+    为配置中的规则更改策略组名字
+    :param changed_group_dict: 新旧策略名列表
+    :param rule_list: 配置文件中的规则字段列表
+    :return: 更改策略名后的规则字段列表
+    """
+
+    new_rules = []
+    for rule in rule_list:
+        for key, value in changed_group_dict.items():
+            rule = rule.replace(key, value)
+        new_rules.append(rule)
+    return new_rules

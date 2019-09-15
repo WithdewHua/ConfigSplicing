@@ -9,7 +9,7 @@ from config import read_config
 import functions as fun
 
 
-class GetNodes(object):
+class GetNodes:
     """
     获取节点
     """
@@ -25,17 +25,17 @@ class GetNodes(object):
         # 初始化节点和节点名列表
         self.nodes = ['[Proxy]\n']
         self.node_names = []
+        self.nodes_dict = {}
 
     def get_ss(self):
         """
         从订阅链接或者托管链接获取节点
-        :return: Surge 格式的节点列表以及其节点名
+        :return: 节点字典
         """
 
         # 初始化
         _nodes = []
-        nodes_list = []
-        nodes_dict = {}
+        _nodes_list = []
 
         # 遍历获取的节点配置，分离出 Surge 格式和 ss 格式
         for line in self.config:
@@ -55,15 +55,49 @@ class GetNodes(object):
                     line += '=' * (4 - missing)
                 # 将 base64 编码内容解码并转成字符串列表
                 _nodes.append(base64.b64decode(line.encode()).decode().strip())
-                nodes_list += _nodes[-1].split('\n')
+                _nodes_list += _nodes[-1].split('\n')
 
         # 处理字符串列表里面的 ss uri
-        for node in nodes_list:
-            [node_name, ss_params] = fun.parse_ss(node)
-            nodes_dict[node_name] = ss_params
-        for key, value in nodes_dict.items():
+        for node in _nodes_list:
+            # 解析每个 ss uri
+            # ss_params: [服务器、端口、加密方式、密码]
+            node_name, ss_params = fun.parse_ss(node)
+            # 存入节点字典中，key：节点名；value：节点参数
+            self.nodes_dict[node_name] = ss_params
+
+    def surge_nodes(self):
+        """
+        构造 Surge 格式的节点列表
+        :return: Surge 格式的节点列表和节点名列表
+        """
+
+        self.get_ss()
+
+        for key, value in self.nodes_dict.items():
             join = key + ' = custom' + ', ' + ', '.join(value) + ', udp-relay=true, tfo=true' + '\n'
             # 添加到节点列表
             self.nodes.append(join)
             self.node_names.append(key)
         return self.nodes, self.node_names
+
+    def clash_nodes(self, clash_file):
+        """
+        构造 clash 格式的节点
+        :return:
+        """
+
+        self.get_ss()
+
+        # 初始化
+        # clash 节点列表
+        self.nodes = clash_file['Proxy']
+        # 删除原文件中的示例节点
+        self.nodes.clear()
+        for key, value in self.nodes_dict.items():
+            node = {}
+            node.update(dict(name=key, type='ss', server=value[0], port=int(value[1]), cipher=value[2], password=value[3],
+                             udp=True))
+            self.nodes.append(node)
+            self.node_names.append(key)
+        return self.nodes, self.node_names
+

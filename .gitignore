@@ -109,6 +109,7 @@ venv.bak/
 
 # generated files
 *.conf
+/results/*.yaml
 
 # IDE
 .idea/
