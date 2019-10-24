@@ -9,7 +9,8 @@ setup(
     py_modules=['main', 'getnodes', 'getrules', 'functions', 'config', 'proxygroup'],
     install_requires=[
         'Click',
-        'ruamel.yaml'
+        'ruamel.yaml',
+        'wget'
     ],
     entry_points='''
         [console_scripts]

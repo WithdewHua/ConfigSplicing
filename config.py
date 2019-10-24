@@ -52,7 +52,9 @@ def write_surge_config(new_config):
     filename = input('为生成的文件取个好听的名字吧（默认 WithdewHua）：').replace(' ', '')
     if filename == '':
         filename = 'WithdewHua'
-    path = os.path.dirname(__file__) + '/results/' + filename + '.conf'
+    if not os.path.exists('results'):
+        os.mkdir('results')
+    path = 'results/' + filename + '.conf'
 
     with open(path, mode='w', encoding='utf-8') as f:
         for line in new_config:
@@ -75,7 +77,9 @@ def write_clash_config(proxy, proxy_group, rule, clash_yaml):
     filename = input('为生成的文件取个好听的名字吧（默认 WithdewHua）：').replace(' ', '')
     if filename == '':
         filename = 'WithdewHua'
-    path = os.path.dirname(__file__) + '/results/' + filename + '.yaml'
+    if not os.path.exists('results'):
+        os.mkdir('results')
+    path = 'results/' + filename + '.yaml'
 
     with open(path, 'w', encoding='utf-8') as f:
         yaml.dump(clash_yaml, f, Dumper=yaml.RoundTripDumper, allow_unicode=True)
